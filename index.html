@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Store - 10 Products Cinematic</title>
+    <!-- اتصال به فونت اینتر -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ======================================== */
+        /* 1. تنظیمات عمومی */
+        /* ======================================== */
+        * {
+            box-sizing: border-box; /* جلوگیری از به هم ریختگی سایزها */
+        }
+
+        :root {
+            --primary-color: #EF233C; 
+            --bg-dark: #000000;
+            --card-bg: rgba(255, 255, 255, 0.98);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            color: #fff;
+        }
+
+        /* ======================================== */
+        /* 2. پس‌زمینه متحرک قرمز و مشکی */
+        /* ======================================== */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 30%, #4a0000 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, #1a0000 0%, transparent 40%),
+                #000;
+            background-size: 200% 200%;
+            animation: meshMove 10s ease infinite alternate;
+        }
+
+        @keyframes meshMove {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
+        }
+
+        /* لایه نوری تپنده */
+        .bg-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at center, rgba(239, 35, 60, 0.05) 0%, transparent 70%);
+            animation: pulse 5s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.8; }
+        }
+
+        /* ======================================== */
+        /* 3. استایل کارت‌های محصولات */
+        /* ======================================== */
+        .container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .main-title {
+            text-align: center;
+            font-size: 3.5rem;
+            margin-bottom: 50px;
+            font-weight: 700;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.4s ease;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            color: #1a1a1a;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(239, 35, 60, 0.3);
+        }
+
+        .img-box {
+            height: 150px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .p-name { font-size: 1.1rem; font-weight: 700; margin: 10px 0; height: 45px; overflow: hidden; }
+        .p-price { color: var(--primary-color); font-weight: 700; font-size: 1.2rem; margin-bottom: 20px; }
+
+        .btn-view {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            width: 100%;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-view:hover { background: #d90429; }
+
+        /* ======================================== */
+        /* 4. استایل مودال (فیکس شده برای دکمه) */
+        /* ======================================== */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(15px);
+            align-items: center; /* مرکز کردن عمودی مودال */
+            justify-content: center; /* مرکز کردن افقی مودال */
+        }
+
+        .modal-content {
+            background: #fff;
+            width: 90%;
+            max-width: 420px;
+            padding: 40px;
+            border-radius: 30px;
+            position: relative;
+            text-align: center;
+            color: #333;
+            transform: scale(0.8);
+            opacity: 0;
+            transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            /* اطمینان از اینکه همه فرزندان مستقیم بلاک هستند تا وسط بمانند */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .modal.active { display: flex; }
+        .modal.active .modal-content { transform: scale(1); opacity: 1; }
+
+        .close-btn { 
+            position: absolute; right: 20px; top: 15px; 
+            font-size: 30px; cursor: pointer; color: #ccc; 
+        }
+
+        .info-box {
+            width: 100%;
+            background: #f8f8f8;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        /* دکمه نهایی مودال (اصلاح شده) */
+        .confirm-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            width: 100%; /* دکمه تمام عرض باکس داخلی باشد */
+            max-width: 300px; /* اما از یک حدی بزرگتر نشود */
+            font-weight: 700;
+            text-decoration: none;
+            display: block;
+            margin: 10px auto 0 auto; /* مارجین اتوماتیک برای مرکزیت مطلق */
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        .confirm-btn:hover { background: #d90429; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+    <div class="animated-bg"></div>
+    <div class="bg-overlay"></div>
+
+    <div class="container">
+        <h1 class="main-title">Modern Collection</h1>
+        
+        <div class="product-grid">
+            <!-- محصول ۱ -->
+            <div class="product-card" id="p1">
+                <div class="img-box">💻</div>
+                <div class="p-name">High-Performance Laptop</div>
+                <div class="p-price">$1,250.00</div>
+                <button class="btn-view" onclick="openModal('p1')">Details & Buy</button>
+            </div>
+            <!-- محصول ۲ -->
+            <div class="product-card" id="p2">
+                <div class="img-box">🎧</div>
+                <div class="p-name">Noise Cancelling Headphones</div>
+                <div class="p-price">$199.99</div>
+                <button class="btn-view" onclick="openModal('p2')">Details & Buy</button>
+            </div>
+            <!-- محصول ۳ -->
+            <div class="product-card" id="p3">
+                <div class="img-box">⌚</div>
+                <div class="p-name">Advanced Sport Watch</div>
+                <div class="p-price">$89.00</div>
+                <button class="btn-view" onclick="openModal('p3')">Details & Buy</button>
+            </div>
+            <!-- محصول ۴ -->
+            <div class="product-card" id="p4">
+                <div class="img-box">📷</div>
+                <div class="p-name">Professional DSLR Camera</div>
+                <div class="p-price">$1,999.00</div>
+                <button class="btn-view" onclick="openModal('p4')">Details & Buy</button>
+            </div>
+            <!-- محصول ۵ -->
+            <div class="product-card" id="p5">
+                <div class="img-box">🔊</div>
+                <div class="p-name">Portable Bluetooth Speaker</div>
+                <div class="p-price">$49.50</div>
+                <button class="btn-view" onclick="openModal('p5')">Details & Buy</button>
+            </div>
+            <!-- محصول ۶ -->
+            <div class="product-card" id="p6">
+                <div class="img-box">🍃</div>
+                <div class="p-name">Smart Home Air Purifier</div>
+                <div class="p-price">$299.00</div>
+                <button class="btn-view" onclick="openModal('p6')">Details & Buy</button>
+            </div>
+            <!-- محصول ۷ -->
+            <div class="product-card" id="p7">
+                <div class="img-box">🍳</div>
+                <div class="p-name">Food Processor Pro</div>
+                <div class="p-price">$120.00</div>
+                <button class="btn-view" onclick="openModal('p7')">Details & Buy</button>
+            </div>
+            <!-- محصول ۸ -->
+            <div class="product-card" id="p8">
+                <div class="img-box">🖥️</div>
+                <div class="p-name">24-Inch Gaming Monitor</div>
+                <div class="p-price">$249.99</div>
+                <button class="btn-view" onclick="openModal('p8')">Details & Buy</button>
+            </div>
+            <!-- محصول ۹ -->
+            <div class="product-card" id="p9">
+                <div class="img-box">📚</div>
+                <div class="p-name">Success Book Set</div>
+                <div class="p-price">$19.99</div>
+                <button class="btn-view" onclick="openModal('p9')">Details & Buy</button>
+            </div>
+            <!-- محصول ۱۰ -->
+            <div class="product-card" id="p10">
+                <div class="img-box">🧹</div>
+                <div class="p-name">Smart Robotic Vacuum</div>
+                <div class="p-price">$349.00</div>
+                <button class="btn-view" onclick="openModal('p10')">Details & Buy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ساختار مودال -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2 id="m-title" style="margin-top:0;">Product Name</h2>
+            <div class="info-box">
+                <p><strong>Price:</strong> <span id="m-price" style="color:var(--primary-color);"></span></p>
+                <p><strong>Rating:</strong> <span id="m-rating"></span></p>
+                <p style="font-size:0.85rem; color:#777; margin-bottom:0;">Free shipping and 7-day return guarantee included.</p>
+            </div>
+            <!-- دکمه که حالا دقیقاً وسط قرار می‌گیرد -->
+            <a href="#" class="confirm-btn">Confirm & Add to Cart</a>
+        </div>
+    </div>
+
+    <script>
+        const products = {
+            'p1': { price: '$1,250.00', rating: '94%' },
+            'p2': { price: '$199.99', rating: '98%' },
+            'p3': { price: '$89.00', rating: '86%' },
+            'p4': { price: '$1,999.00', rating: '100%' },
+            'p5': { price: '$49.50', rating: '78%' },
+            'p6': { price: '$299.00', rating: '92%' },
+            'p7': { price: '$120.00', rating: '82%' },
+            'p8': { price: '$249.99', rating: '96%' },
+            'p9': { price: '$19.99', rating: '84%' },
+            'p10': { price: '$349.00', rating: '90%' }
+        };
+
+        function openModal(id) {
+            const data = products[id];
+            const name = document.getElementById(id).querySelector('.p-name').innerText;
+            
+            document.getElementById('m-title').innerText = name;
+            document.getElementById('m-price').innerText = data.price;
+            document.getElementById('m-rating').innerText = data.rating;
+
+            const modal = document.getElementById('productModal');
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('productModal');
+            modal.classList.remove('active');
+        }
+
+        // بستن با کلیک بیرون از باکس
+        window.onclick = function(event) {
+            const modal = document.getElementById('productModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
